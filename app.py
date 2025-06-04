@@ -1,7 +1,9 @@
+from flask import Flask, request, render_template
 from dotenv import load_dotenv
 import os
 import openai
 
+# 환경변수 로드 및 API 키 설정
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -59,56 +61,48 @@ Unreal 디지털트윈 3D에셋 개발자
 상담시간: 평일 09:00 ~ 18:00 (점심시간 11:30 ~ 12:30 제외)
 '''
 
-# GPT API 호출 함수
+# GPT 호출 함수
 def ask_gpt(question):
-    response = openai.ChatCompletion.create(
-        model="gpt-4o",
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "너는 친절하고 귀여운 상공봇이야."
-                    f"{context}\n"
-                    "간결하고 핵심만 대답하되 매우 귀여워야 해.\n"
-                    "대한상공회의소에 모든 정보를 알고 있어야 하고 친절해야해.\n"
-                    "대답할 때, 텍스트 정렬을 좀 해줘\n"
-                    "이모티콘 많이 써도 돼\n"
-                )
-            },
-            {"role": "user", "content": question}
-        ],
-        temperature=0.7,
-        max_tokens=500,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0,
-    )
-    return response['choices'][0]['message']['content']
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",  # 필요시 gpt-3.5-turbo로 변경
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "너는 친절하고 귀여운 상공봇이야.\n"
+                        f"{context}\n"
+                        "간결하고 핵심만 대답하되 매우 귀여워야 해.\n"
+                        "텍스트 정렬을 좀 해줘. 이모티콘 많이 써도 돼.\n"
+                    )
+                },
+                {"role": "user", "content": question}
+            ],
+            temperature=0.7,
+            max_tokens=500
+        )
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        return f"❗ 오류 발생: {str(e)}"
 
-from flask import Flask, request, render_template
-
-# Flask 애플리케이션 설정
-load_dotenv()
+# Flask 앱 초기화
 app = Flask(__name__)
-
-# 채팅 기록 저장
 chat_history = []
 
+# 라우트 설정
 @app.route('/', methods=['GET', 'POST'])
 def home():
     global chat_history
     if request.method == 'POST':
-        # 사용자의 질문 받기
         user_message = request.form.get('question')
-        print(f"User question: {user_message}")  # 서버 로그 출력
-
-        # GPT API 호출을 통해 봇 응답 생성
         bot_response = ask_gpt(user_message)
 
-        # 채팅 기록에 추가
         chat_history.append({'role': 'user', 'content': user_message})
         chat_history.append({'role': 'bot', 'content': bot_response})
-    
-    # 채팅 기록과 함께 HTML 렌더링
+
     return render_template('index.html', chat=chat_history)
+
+# 🔥 Render에서는 app.run() 없이도 작동하므로 제외
+# if __name__ == '__main__':
+#     app.run(debug=True)
 
