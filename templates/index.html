@@ -15,44 +15,45 @@
             margin: 0;
         }
         .chat-container {
-            width: 400px; /* 채팅창의 고정 너비 설정 */
+            width: 400px;
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            align-items: center; /* 중앙 정렬 */
+            align-items: center;
         }
         .chat-header {
             text-align: center;
             padding: 10px;
             border-bottom: 1px solid #ddd;
-            width: 100%; /* 헤더가 전체 너비를 차지하도록 설정 */
-            background-color: #007bff; /* 헤더 배경색 (선택 사항) */
-            color: white; /* 텍스트 색상 (선택 사항) */
+            width: 100%;
+            background-color: #007bff;
+            color: white;
         }
         .chat-header img {
-            max-width: 100px; /* 로고 이미지의 최대 너비 설정 */
+            max-width: 100px;
             height: auto;
             display: block;
-            margin: 0 auto; /* 이미지가 중앙에 배치되도록 설정 */
+            margin: 0 auto;
         }
         .chat-box {
-            height: 300px; /* 채팅 메시지 영역의 고정 높이 설정 */
+            height: 300px;
             overflow-y: scroll;
             padding: 15px;
             border-bottom: 1px solid #ddd;
             flex-grow: 1;
-            word-wrap: break-word; /* 긴 단어도 줄바꿈 처리 */
-            word-break: break-all; /* 텍스트가 상자의 너비를 넘지 않도록 줄바꿈 */
-            width: 98%; /* 채팅창이 컨테이너의 너비를 채우도록 설정 */
+            word-wrap: break-word;
+            word-break: break-all;
+            width: 98%;
         }
         .chat-box .message {
             margin-bottom: 10px;
             padding: 8px 10px;
             border-radius: 10px;
             display: inline-block;
+            white-space: pre-line;
         }
         .chat-box .user {
             background-color: #007bff;
@@ -66,49 +67,40 @@
             align-self: flex-start;
             text-align: left;
         }
-        .chat-box .message {
-            white-space: pre-line; /* \n을 줄바꿈으로 인식 */
-        }
-
         .input-box {
             padding: 10px;
             display: flex;
             align-items: center;
             border-top: 1px solid #ddd;
-            width: 100%; /* 입력창이 컨테이너의 너비를 채우도록 설정 */
+            width: 100%;
         }
         .input-box input[type="text"] {
-            flex-grow: 1;  /* 입력창이 가로 공간을 최대한 차지하도록 설정 */
+            flex-grow: 1;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             outline: none;
-            margin-right: 10px;  /* 입력창과 버튼 사이에 공간 추가 */
-            min-width: 300px;  /* 입력창의 최소 너비를 설정 */
+            margin-right: 10px;
+            min-width: 300px;
         }
-        .input-box input[type="submit"] {
-            padding: 10px 15px; /* 전송 버튼의 내부 여백 조절 (크기 조절) */
+        .input-box button {
+            padding: 10px 15px;
             background-color: #007bff;
             border: none;
             border-radius: 5px;
             color: white;
             cursor: pointer;
-            flex-shrink: 0;  /* 버튼 크기가 줄어들지 않도록 설정 */
+            flex-shrink: 0;
         }
     </style>
-    <script>
-        function focusInput() {
-            document.getElementById('question').focus(); /* 페이지 로드 시 입력창에 포커스 */
-        }
-    </script>
 </head>
-<body onload="focusInput()">
+<body>
     <div class="chat-container">
         <div class="chat-header">
-            <img src="{{ url_for('static', filename='images/대한상공회의소_로고.png') }}" alt="Korea IT Academy Logo"> <!-- 로고 이미지 추가 -->
-            <h1>인력개발사업단 상담봇</h1> <!-- 헤더 텍스트 추가 -->
+            <img src="{{ url_for('static', filename='images/대한상공회의소_로고.png') }}" alt="로고">
+            <h1>인력개발사업단 상담봇</h1>
         </div>
-        <div class="chat-box">
+        <div class="chat-box" id="chat-box">
             {% if chat %}
                 {% for message in chat %}
                     <div class="message {{ message.role }}">
@@ -116,15 +108,49 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <div class="message bot">안녕하세요! 궁금한 점이 있으면 물어보세요.</div>
+                <div class="message bot">안녕하세요! 궁금한 점이 있으면 물어보세요 😊</div>
             {% endif %}
         </div>
         <div class="input-box">
-            <form method="POST" onsubmit="focusInput()">
-                <input type="text" id="question" name="question" placeholder="질문을 입력하세요..." required>
-                <input type="submit" value="전송">
-            </form>
+            <input type="text" id="question" placeholder="질문을 입력하세요..." required>
+            <button id="submit-btn">전송</button>
         </div>
     </div>
+
+    <script>
+        const submitBtn = document.getElementById("submit-btn");
+        const input = document.getElementById("question");
+        const chatBox = document.getElementById("chat-box");
+
+        submitBtn.addEventListener("click", async function (e) {
+            e.preventDefault();
+            const question = input.value.trim();
+            if (!question) return;
+
+            const userDiv = document.createElement("div");
+            userDiv.className = "message user";
+            userDiv.textContent = question;
+            chatBox.appendChild(userDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            input.value = "";
+
+            const res = await fetch("/ask", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ question: question })
+            });
+
+            const data = await res.json();
+
+            const botDiv = document.createElement("div");
+            botDiv.className = "message bot";
+            botDiv.textContent = data.answer;
+            chatBox.appendChild(botDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    </script>
 </body>
 </html>
