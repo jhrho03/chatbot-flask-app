@@ -98,10 +98,14 @@ def home():
 
 @app.route('/ask', methods=['POST'])
 def ask():
-    data = request.get_json()
-    question = data.get("question", "")
-    answer = ask_gpt(question)
-    return jsonify({"answer": answer})
+    try:
+        data = request.get_json()
+        question = data.get("question", "")
+        answer = ask_gpt(question)
+        return jsonify({"answer": answer})
+    except Exception as e:
+        print("❗ ask() 에러:", e)  # 🔥 서버 로그에 오류 출력
+        return jsonify({"answer": f"❗ 서버 오류: {str(e)}"}), 500
 
 # 🔥 Render에서는 app.run() 없이도 작동하므로 제외
 # if __name__ == '__main__':
