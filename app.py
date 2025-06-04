@@ -92,17 +92,16 @@ def ask_gpt(question):
 app = Flask(__name__)
 chat_history = []
 
-# 라우트 설정
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def home():
-    global chat_history
-    if request.method == 'POST':
-        user_message = request.form.get('question')
-        bot_response = ask_gpt(user_message)
+    return render_template('index.html', chat=[])
 
-        chat_history.append({'role': 'user', 'content': user_message})
-        chat_history.append({'role': 'bot', 'content': bot_response})
-    return render_template('index.html', chat=chat_history)
+@app.route('/ask', methods=['POST'])
+def ask():
+    data = request.get_json()
+    question = data.get("question", "")
+    answer = ask_gpt(question)
+    return jsonify({"answer": answer})
 
 # 🔥 Render에서는 app.run() 없이도 작동하므로 제외
 # if __name__ == '__main__':
