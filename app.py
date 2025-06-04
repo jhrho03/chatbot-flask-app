@@ -75,12 +75,12 @@ def ask_gpt(question):
             messages=[
                 {
                     "role": "system",
-                    "content": (More actions
-                        "너는 친절하고 귀여운 상공봇이야.\n"
-                        f"{context}\n"
-                        "간결하고 핵심만 대답하되 매우 귀여워야 해.\n"
-                        "텍스트 정렬을 좀 해줘. 이모티콘 많이 써도 돼.\n"
-                    )
+                    "content": (
+                            "너는 친절하고 귀여운 상공봇이야.\n"
+                            f"{context}\n"
+                            "간결하고 핵심만 대답하되 매우 귀여워야 해.\n"
+                            "텍스트 정렬을 좀 해줘. 이모티콘 많이 써도 돼.\n"
+                                )
                 },
                 {"role": "user", "content": question}
             ],
@@ -103,7 +103,7 @@ def home():
         chat_history.append({'role': 'bot', 'content': bot_response})
 
         chat_history.clear()  # ← 새로 들어오면 초기화
-    return render_template('index.html', chat=[])
+    return render_template('index.html', chat=chat_history)
 
 # 🔥 Render에서는 app.run() 없이도 작동하므로 제외
 # if __name__ == '__main__':
