@@ -66,38 +66,46 @@ Unreal 디지털트윈 3D에셋 개발자
 '''
 
 def ask_gpt(question):
-    response = openai.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "너는 친절하고 귀여운 상공봇이야.\n"
-                    f"{context}\n"
-                    "간결하고 핵심만 대답하되 매우 귀여워야 해.\n"
-                    "이모티콘 많이 써도 돼\n"
-                )
-            },
-            {"role": "user", "content": question}
-        ],
-        temperature=0.7
-    )
-    return response.choices[0].message.content
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (More actions
+                        "너는 친절하고 귀여운 상공봇이야.\n"
+                        f"{context}\n"
+                        "간결하고 핵심만 대답하되 매우 귀여워야 해.\n"
+                        "텍스트 정렬을 좀 해줘. 이모티콘 많이 써도 돼.\n"
+                    )
+                },
+                {"role": "user", "content": question}
+            ],
+            temperature=0.7,
+            max_tokens=500
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"❗ 오류 발생: {str(e)}"
 
-@app.route('/')
+# Flask 앱 초기화
+app = Flask(__name__)
+chat_history = []
+
+# 라우트 설정
+@app.route('/', methods=['GET', 'POST'])
 def home():
+    global chat_history
+    if request.method == 'POST':
+        user_message = request.form.get('question')
+        bot_response = ask_gpt(user_message)
+
+        chat_history.append({'role': 'user', 'content': user_message})
+        chat_history.append({'role': 'bot', 'content': bot_response})
+
     return render_template('index.html', chat=chat_history)
 
-@app.route('/ask', methods=['POST'])
-def ask():
-    user_message = request.json.get('question')
-    bot_response = ask_gpt(user_message)
-    
-    chat_history.append({'role': 'user', 'content': user_message})
-    chat_history.append({'role': 'bot', 'content': bot_response})
-    
-    return jsonify({'answer': bot_response})
-
-if __name__ == '__main__':
-    app.run(debug=True)
+# 🔥 Render에서는 app.run() 없이도 작동하므로 제외
+# if __name__ == '__main__':
+#     app.run(debug=True)
 
