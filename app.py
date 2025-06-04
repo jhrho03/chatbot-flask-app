@@ -1,11 +1,12 @@
-from flask import Flask, request, render_template
+from openai import OpenAI
 from dotenv import load_dotenv
 import os
-import openai
 
-# 환경변수 로드 및 API 키 설정
+# 환경변수 로드
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# OpenAI 클라이언트 초기화
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # GPT에게 알려줄 정보(개인적인 정보)
 context = '''
@@ -61,11 +62,10 @@ Unreal 디지털트윈 3D에셋 개발자
 상담시간: 평일 09:00 ~ 18:00 (점심시간 11:30 ~ 12:30 제외)
 '''
 
-# GPT 호출 함수
 def ask_gpt(question):
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4o",  # 필요시 gpt-3.5-turbo로 변경
+        response = client.chat.completions.create(
+            model="gpt-4o",
             messages=[
                 {
                     "role": "system",
@@ -81,10 +81,10 @@ def ask_gpt(question):
             temperature=0.7,
             max_tokens=500
         )
-        return response['choices'][0]['message']['content'].strip()
+        return response.choices[0].message.content.strip()
     except Exception as e:
         return f"❗ 오류 발생: {str(e)}"
-
+        
 # Flask 앱 초기화
 app = Flask(__name__)
 chat_history = []
