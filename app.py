@@ -1,5 +1,6 @@
 from openai import OpenAI
 from dotenv import load_dotenv
+from flask import Flask, request, render_template
 import os
 
 # 환경변수 로드
