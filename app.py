@@ -101,9 +101,6 @@ def home():
 
         chat_history.append({'role': 'user', 'content': user_message})
         chat_history.append({'role': 'bot', 'content': bot_response})
-
-    elif request.method == 'GET':
-        chat_history.clear()  # ← GET일 때만 초기화
     return render_template('index.html', chat=chat_history)
 
 # 🔥 Render에서는 app.run() 없이도 작동하므로 제외
