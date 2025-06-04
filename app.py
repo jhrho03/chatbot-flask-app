@@ -1,6 +1,6 @@
 from openai import OpenAI
 from dotenv import load_dotenv
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 import os
 
 # 환경변수 로드
