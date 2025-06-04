@@ -64,9 +64,6 @@ Unreal 디지털트윈 3D에셋 개발자
 
 현재 대한상공회의소 회장은 최태원 회장임
 '''
-# Flask 앱 초기화
-app = Flask(__name__)
-chat_history = []
 
 def ask_gpt(question):
     try:
@@ -90,6 +87,10 @@ def ask_gpt(question):
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"❗ 오류 발생: {str(e)}"
+
+# Flask 앱 초기화
+app = Flask(__name__)
+chat_history = []
 
 # 라우트 설정
 @app.route('/', methods=['GET', 'POST'])
